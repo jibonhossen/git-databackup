@@ -13,6 +13,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # UPDATED STEP: Install PostgreSQL 17 Client explicitly
+      # We add the official Postgres repository to get the newest version
       - name: Install PostgreSQL 17 Client
         run: |
           sudo apt-get install -y postgresql-common
@@ -26,7 +27,7 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
-      # Step 4: Upload Artifact (7 Days Retention)
+      # Step 4: Upload Artifact
       - name: Upload Backup Artifact
         uses: actions/upload-artifact@v4
         with:
