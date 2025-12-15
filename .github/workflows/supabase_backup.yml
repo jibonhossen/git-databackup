@@ -12,10 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install PostgreSQL Client
+      # UPDATED STEP: Install PostgreSQL 17 Client explicitly
+      - name: Install PostgreSQL 17 Client
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
 
       # Step 3: Dump Database (No Compression)
       - name: Dump Database
@@ -24,11 +26,10 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
-      # Step 4: Upload Artifact
+      # Step 4: Upload Artifact (7 Days Retention)
       - name: Upload Backup Artifact
         uses: actions/upload-artifact@v4
         with:
           name: supabase-backup-${{ github.run_id }}
           path: supabase_backup.sql
-          # Updated to 7 days as requested
           retention-days: 7
