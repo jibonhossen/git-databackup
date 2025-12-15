@@ -1,0 +1,42 @@
+name: Daily Supabase Backup (GZipped)
+
+# Defines when the workflow runs
+on:
+  # 1. Schedule: Runs every day at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+  # 2. Manual Trigger: Allows you to run it anytime from the GitHub UI
+  workflow_dispatch:
+
+jobs:
+  backup:
+    # Runs on a standard Linux virtual machine provided by GitHub
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Check out the repository code (required for actions)
+      - uses: actions/checkout@v4
+
+      # Step 2: Install PostgreSQL tools (to get the pg_dump command)
+      - name: Install PostgreSQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      # Step 3: Dump and Compress the Database
+      # We pipe the pg_dump output directly to gzip to save disk space (Crucial for large DBs)
+      - name: Dump and GZip Database
+        run: |
+          pg_dump "$SUPABASE_DB_URL" --clean --if-exists --quote-all-identifiers --no-owner --no-privileges | gzip > supabase_backup.sql.gz
+        env:
+          # Safely access the secret we configured in Step 2
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      # Step 4: Upload the Compressed File as an Artifact
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: supabase_backup.sql.gz
+          # Setting retention to 5 days to help stay under the GitHub Free 500MB storage limit
+          retention-days: 5
