@@ -2,13 +2,13 @@ name: Daily Supabase Backup (Raw SQL)
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight
+    - cron: "0 0 * * *" # Runs daily at midnight
   workflow_dispatch: # Allows manual trigger
 
 jobs:
   backup:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +23,7 @@ jobs:
       # Step 3: Dump Database (No Compression)
       - name: Dump Database
         run: |
-          pg_dump "$SUPABASE_DB_URL" --clean --if-exists --quote-all-identifiers --no-owner --no-privileges > supabase_backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --clean --if-exists --quote-all-identifiers --no-owner --no-privileges > supabase_backup.sql
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
